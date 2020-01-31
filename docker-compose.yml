@@ -132,6 +132,216 @@ services:
       - ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
     networks:
       - elk 
+version: '2.2'
+services:
+  elasticsearch:
+    image: elasticsearch:7.5.2
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es
+      - cluster.initial_master_nodes=elasticsearch,es02,es03,es04,es05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elk
+  es02:
+    image: elasticsearch:7.5.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch,es03,es04,es05
+      - cluster.initial_master_nodes=elasticsearch,es02,es03,es04,es05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    networks:
+      - elk 
+    depends_on:
+      - elasticsearch
+  es03:
+    image: elasticsearch:7.5.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch,es02,es04,es05
+      - cluster.initial_master_nodes=elasticsearch,es02,es03,es04,es05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    networks:
+      - elk 
+    depends_on:
+      - elasticsearch
+  es04:
+    image: elasticsearch:7.5.2
+    container_name: es04
+    environment:
+      - node.name=es04
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch,es02,es03,es05
+      - cluster.initial_master_nodes=elasticsearch,es02,es03,es04,es05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data04:/usr/share/elasticsearch/data
+    networks:
+      - elk 
+    depends_on:
+      - elasticsearch
+  es05:
+    image: elasticsearch:7.5.2
+    container_name: es05
+    environment:
+      - node.name=es05
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch,es02,es03,es04
+      - cluster.initial_master_nodes=elasticsearch,es02,es03,es04,es05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data05:/usr/share/elasticsearch/data
+    networks:
+      - elk 
+    depends_on:
+      - elasticsearch
+  ls01:
+    image: logstash:7.5.2
+    container_name: ls01
+    ports: 
+      - "5044:5044"
+    volumes:
+      - /root/elk/ls01pipeline:/usr/share/logstash/pipeline/ 
+  ls02:
+    image: logstash:7.5.2
+    container_name: ls02
+    ports:
+      - "5045:5044"
+    volumes:
+      - /root/elk/ls02pipeline:/usr/share/logstash/pipeline/
+  ls03:
+    image: logstash:7.5.2
+    container_name: ls03
+    ports:
+      - "5045:5044"
+    volumes:
+      - /root/elk/ls03pipeline:/usr/share/logstash/pipeline/
+  zoo1:
+    image: zookeeper:3.5.6
+    container_name: zoo1
+    ports:
+      - 2181:2181
+    environment:
+      - ZOO_MY_ID: 1
+      - ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      - elk
+
+  zoo2:
+    image: zookeeper:3.5.6
+    container_name: zoo2
+    ports:
+      - 2182:2181
+    environment:
+      - ZOO_MY_ID: 2
+      - ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      - elk 
+
+  zoo3:
+    image: zookeeper:3.5.6
+    container_name: zoo3
+    ports:
+      - 2183:2181
+    environment:
+      - ZOO_MY_ID: 3
+      - ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    networks:
+      - elk 
+  kafka01:
+    image: otrf/helk-kafka-broker:2.3.0
+    build: /root/elk/kafka/
+    container_name: kafka01
+    depends_on:
+      - zoo1,zoo2,zoo3
+    environment:
+      - KAFKA_BROKER_NAME: kafka01
+      - KAFKA_BROKER_ID: 1
+      - KAFKA_BROKER_PORT: 9092
+      - REPLICATION_FACTOR: 1
+      - ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092
+      - ZOOKEEPER_NAME: zoo1
+      - KAFKA_CREATE_TOPICS: winlogbeat, filebeat
+      - KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      - LOG_RETENTION_HOURS: 4
+    ports:
+      - "9092:9092"
+    networks:
+      - elk
+
+  kibana:
+    build: kibana:7.5.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+
+
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+  ls01pipeline:
+    driver: local
+  ls02pipeline:
+    driver: local
+  ls03pipeline:
+    driver: local
+
+networks:
+  elk:
+    driver: bridge
+
   ls01:
     image: logstash:7.5.2
     container_name: ls01
