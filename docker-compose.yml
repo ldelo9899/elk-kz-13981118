@@ -1,4 +1,4 @@
-version: '3.5'
+version: '2'
 services:
   elasticsearch:
     image: elasticsearch:7.5.2
@@ -149,7 +149,7 @@ services:
     image: logstash:7.5.2
     container_name: ls03
     ports:
-      - "5045:5044"
+      - "5046:5044"
     ulimits:
       memlock:
         soft: -1
@@ -176,8 +176,8 @@ services:
         soft: -1
         hard: -1
     environment:
-      - ZOO_MY_ID: 1
-      - ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo02:2888:3888;2181 server.3=zoo03:2888:3888;2181
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo02:2888:3888;2181 server.3=zoo03:2888:3888;2181
     volumes:
       - /root/elk/zoo01/data:/data
       - /root/elk/zoo01/datalog:/datalog
@@ -202,8 +202,8 @@ services:
         soft: -1
         hard: -1
     environment:
-      - ZOO_MY_ID: 2
-      - ZOO_SERVERS: server.1=zoo01:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo03:2888:3888;2181
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo01:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo03:2888:3888;2181
     volumes:
       - /root/elk/zoo02/data:/data
       - /root/elk/zoo02/datalog:/datalog
@@ -229,8 +229,8 @@ services:
         soft: -1
         hard: -1
     environment:
-      - ZOO_MY_ID: 3
-      - ZOO_SERVERS: server.1=zoo01:2888:3888;2181 server.2=zoo02:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo01:2888:3888;2181 server.2=zoo02:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
     volumes:
       - /root/elk/zoo03/data:/data
       - /root/elk/zoo03/datalog:/datalog
@@ -248,8 +248,7 @@ services:
       - zoo01
       - zoo02
   kafka01:
-    image: otrf/helk-kafka-broker:2.3.0
-    build: /root/elk/kafka01/
+    build: ./kafka01
     container_name: kafka01
     ports:
       - "9092:9092"
@@ -258,17 +257,18 @@ services:
         soft: -1
         hard: -1
     environment:
-      - KAFKA_BROKER_NAME: kafka01
-      - KAFKA_BROKER_ID: 1
-      - KAFKA_BROKER_PORT: 9092
-      - REPLICATION_FACTOR: 1
-      - KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092,PLAINTEXT://${DOCKER_HOST_IP:-127.0.0.1}:9092
-      - ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
-      - KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
-      - KAFKA_CREATE_TOPICS: winlogbeat, filebeat
-      - KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
-      - LOG_RETENTION_HOURS: 4
-      - KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_BROKER_NAME: kafka01
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_PORT: 9092
+      REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092
+      ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092
+      ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
+      KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
+      KAFKA_CREATE_TOPICS: winlogbeat, filebeat
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      LOG_RETENTION_HOURS: 4
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     networks:
       - elk
     depends_on:
@@ -284,7 +284,6 @@ services:
       - zoo02
       - zoo03
   kafka02:
-    image: otrf/helk-kafka-broker:2.3.0
     build: /root/elk/kafka02/
     container_name: kafka02
     ports:
@@ -294,17 +293,18 @@ services:
         soft: -1
         hard: -1
     environment:
-      - KAFKA_BROKER_NAME: kafka02
-      - KAFKA_BROKER_ID: 2
-      - KAFKA_BROKER_PORT: 9092
-      - REPLICATION_FACTOR: 1
-      - KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka02:9092,PLAINTEXT://${DOCKER_HOST_IP:-127.0.0.1}:9093
-      - ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
-      - KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
-      - KAFKA_CREATE_TOPICS: winlogbeat, filebeat
-      - KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
-      - LOG_RETENTION_HOURS: 4
-      - KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_BROKER_NAME: kafka02
+      KAFKA_BROKER_ID: 2
+      KAFKA_BROKER_PORT: 9092
+      REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka02:9092
+      ADVERTISED_LISTENER: PLAINTEXT://kafka02:9092
+      ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
+      KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
+      KAFKA_CREATE_TOPICS: winlogbeat, filebeat
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      LOG_RETENTION_HOURS: 4
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     networks:
       - elk
     depends_on:
@@ -321,7 +321,6 @@ services:
       - zoo03
       - kafka01
   kafka03:
-    image: otrf/helk-kafka-broker:2.3.0
     build: /root/elk/kafka03/
     container_name: kafka03
     ports:
@@ -331,17 +330,18 @@ services:
         soft: -1
         hard: -1
     environment:
-      - KAFKA_BROKER_NAME: kafka03
-      - KAFKA_BROKER_ID: 3
-      - KAFKA_BROKER_PORT: 9092
-      - REPLICATION_FACTOR: 1
-      - KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092,PLAINTEXT://${DOCKER_HOST_IP:-127.0.0.1}:9093
-      - ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
-      - KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
-      - KAFKA_CREATE_TOPICS: winlogbeat, filebeat
-      - KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
-      - LOG_RETENTION_HOURS: 4
-      - KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_BROKER_NAME: kafka03
+      KAFKA_BROKER_ID: 3
+      KAFKA_BROKER_PORT: 9092
+      REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_LISTENER: PLAINTEXT://kafka01:9092
+      ADVERTISED_LISTENER: PLAINTEXT://kafka02:9092
+      ZOOKEEPER_NAME: zoo01:2181,zoo02:2181,zoo03:2181
+      KAFKA_ZOOKEEPER_CONNECT: "zoo01:2181,zoo02:2181,zoo03:2181"
+      KAFKA_CREATE_TOPICS: winlogbeat, filebeat
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      LOG_RETENTION_HOURS: 4
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     networks:
       - elk
     depends_on:
@@ -359,7 +359,7 @@ services:
       - kafka01
       - kafka02
   kibana:
-    build: kibana:7.5.2
+    image: kibana:7.5.2
     container_name: kibana
     ports:
       - "5601:5601"
@@ -390,6 +390,10 @@ volumes:
   data02:
     driver: local
   data03:
+    driver: local
+  data04:
+    driver: local
+  data05:
     driver: local
   ls01pipeline:
     driver: local

@@ -1,4 +1,4 @@
-FROM phusion
+FROM phusion/baseimage
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=en_US.UTF-8 
@@ -17,10 +17,10 @@ ENV KAFKA_SCRIPT=$KAFKA_HOME/bin/kafka-server-start.sh
 ENV KAFKA_CONFIG=$KAFKA_HOME/config/server.properties
 
 
-RUN apt-get update -qq   && && apt-get install -qqy   openjdk-8-jre-headless   &&  apt-get -qy clean   autoremove
+RUN apt-get update -qq   && apt-get install -qqy   openjdk-8-jre-headless wget && apt-get -qy clean   autoremove
 RUN rm -rf /var/lib/apt/lists/*
 RUN bash -c 'mkdir -pv /opt/elk/kafka'
-RUN wget -qO- https://mirrors.ocf.berkeley.edu/apache/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz | sudo tar xvz -C /opt/elk/kafka/ --strip-components=1
+RUN wget -qO- https://mirrors.ocf.berkeley.edu/apache/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz |  tar xvz -C /opt/elk/kafka/ --strip-components=1
 RUN mkdir -v $KAFKA_LOGS_PATH
 RUN groupadd -g ${KAFKA_GID} ${KAFKA_USER}
 RUN useradd -u ${KAFKA_UID} -g ${KAFKA_GID} -d ${KAFKA_HOME} --no-create-home -s /bin/bash ${KAFKA_USER}
