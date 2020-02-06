@@ -1,0 +1,15 @@
+filebeat.inputs:
+
+- type: stdin
+  enabled: true
+  fields_under_root: true
+  encoding: UTF-8
+output.kafka:
+  hosts: ["192.168.19.140:9092"]
+  topic: "filebeat"
+  partition.round_robin:
+    reachable_only: false
+
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000

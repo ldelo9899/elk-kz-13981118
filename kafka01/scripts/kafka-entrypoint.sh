@@ -62,3 +62,4 @@ echo "[ELK-DOCKER-INSTALLATION-INFO] Creating the following kafka topics: $KAFKA
 ./kafka-create-topics.sh &
 
 exec "$@"
+

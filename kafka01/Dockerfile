@@ -1,16 +1,16 @@
 FROM phusion/baseimage
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=en_US.UTF-8 
-ENV LANGUAGE=en_US:en 
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 ENV KAFKA_VERSION=2.4.0
-ENV SCALA_VERSION=2.13  
-ENV KAFKA_LOGS_PATH=/var/log/kafka 
-ENV KAFKA_CONSOLE_LOG=/var/log/kafka/elk-kafka.log  
+ENV SCALA_VERSION=2.13
+ENV KAFKA_LOGS_PATH=/var/log/kafka
+ENV KAFKA_CONSOLE_LOG=/var/log/kafka/elk-kafka.log
 ENV KAFKA_HOME=/opt/elk/kafka
-ENV KAFKA_GID=910 
-ENV KAFKA_UID=910 
+ENV KAFKA_GID=910
+ENV KAFKA_UID=910
 ENV KAFKA_USER=kafkauser
 
 ENV KAFKA_SCRIPT=$KAFKA_HOME/bin/kafka-server-start.sh
@@ -37,3 +37,4 @@ USER ${KAFKA_USER}
 WORKDIR /opt/elk/kafka/scripts/
 ENTRYPOINT ["./kafka-entrypoint.sh"]
 CMD ["/bin/bash","-c","$KAFKA_SCRIPT $KAFKA_CONFIG"]
+
