@@ -11,9 +11,9 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - data07:/usr/share/elasticsearch/data
+      - data08:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - "9200:9200"
     networks:
       - elk
   ls01:
@@ -26,7 +26,8 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - /root/elk/ls01:/usr/share/logstash/pipeline/
+      - /root/elk/ls01/pipeline/:/usr/share/logstash/pipeline/
+      - /root/elk/ls01/winlogbeat.template.json:/tmp/winlogbeat.template.json
     networks:
       - elk
     depends_on:
@@ -108,7 +109,7 @@ services:
       - kibana
 
 volumes:
-  data07:
+  data08:
     driver: local
 
 networks:
